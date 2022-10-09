@@ -69,7 +69,7 @@ class Flash:
         return np.array([y, x]), np.array([V, 1-V])
 
 
-from flash import PR, SRK, AQ1, AQ3, VdWP
+# from flash import PR, SRK, AQ1, AQ3, VdWP
 class EoS:
     def __init__(self, components, ions, eos):
         self.components = components

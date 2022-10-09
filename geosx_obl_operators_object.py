@@ -1,7 +1,6 @@
 import numpy as np
 import os
 import sys
-import progressbar
 from time import sleep
 
 

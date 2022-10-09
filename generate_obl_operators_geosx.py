@@ -7,7 +7,7 @@ from simple_kinetics.model import Model as ModelKinBasic
 from binary_system.model import Model as ModelBinarySystem
 
 
-case = 3
+case = 2
 if case == 1:
     my_model = ModelBinarySystem()
     file_name = 'binary_system_operators.txt'
