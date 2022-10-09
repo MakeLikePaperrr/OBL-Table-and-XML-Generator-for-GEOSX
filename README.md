@@ -1,5 +1,5 @@
 # OBL-Table-and-XML-Generator-for-GEOSX
-Python scripts for generating OBL tables and XML-files used for simulating multiphase reactive flow using GEOSX platform. DARTS is required for generating the OBL tables. 
+Python scripts for generating OBL tables and XML-files used for simulating multiphase reactive flow using GEOSX platform (https://github.com/GEOSX/GEOSX). DARTS is required for generating the OBL tables. 
 
 To install darts, use the following code (NOTE: it might be easiest to start with a clean virtual environment, see https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html for more information):
 
