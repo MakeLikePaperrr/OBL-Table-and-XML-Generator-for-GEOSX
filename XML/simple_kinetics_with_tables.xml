@@ -1,0 +1,254 @@
+<?xml version="1.0"?>
+<Problem>
+	<Solvers>
+		<ReactiveCompositionalMultiphaseOBL
+			name="compflow"
+			logLevel="1"
+			discretization="fluidTPFA"
+			targetRegions="{matrix}"
+			enableEnergyBalance="0"
+			maxCompFractionChange="1"
+			numComponents="3"
+			numPhases="2"
+			transMultExp="3"
+			OBLOperatorsTableFile="simple_kin_operators.txt">
+		<NonlinearSolverParameters
+			timeStepDecreaseFactor="0.5"
+			newtonTol="0.0001"
+			newtonMaxIter="25"/>
+		<LinearSolverParameters
+			directParallel="0"/>
+		</ReactiveCompositionalMultiphaseOBL>
+	</Solvers>
+
+	<Mesh>
+		<InternalMesh
+			name="mesh1"
+			elementTypes="{C3D8}"
+			xCoords="{0, 200}"
+			yCoords="{0, 800}"
+			zCoords="{0, 10}"
+			nx="{40}"
+			ny="{160}"
+			nz="{1}"
+			cellBlockNames="{matrix00}"/>
+	</Mesh>
+
+	<Geometry>
+		<Box
+			name="source"
+			xMin="{-0.01, -0.01, -0.01}"
+			xMax="{5.01, 800.01, 10.01}"/>
+		<Box
+			name="sink"
+			xMin="{194.99, -0.01, -0.01}"
+			xMax="{200.01, 800.01, 10.01}"/>
+	</Geometry>
+
+	<Events
+		maxTime="50000000.0">
+		<PeriodicEvent
+			name="outputs"
+			timeFrequency="1000000.0"
+			target="/Outputs/vtkOutput"/>
+		<PeriodicEvent
+			name="solver_1"
+			forceDt="1000.0"
+			endTime="10000.0"
+			target="/Solvers/compflow"/>
+		<PeriodicEvent
+			name="solver_2"
+			forceDt="500000.0"
+			beginTime="10000.0"
+			target="/Solvers/compflow"/>
+	</Events>
+
+	<NumericalMethods>
+		<FiniteVolume>
+			<TwoPointFluxApproximation name="fluidTPFA"/>
+		</FiniteVolume>
+	</NumericalMethods>
+
+	<ElementRegions>
+		<CellElementRegion
+			name="matrix"
+			cellBlocks="{matrix00}"
+			materialList="{rock}"/>
+	</ElementRegions>
+
+	<Constitutive>
+		<CompressibleSolidConstantPermeability
+			name="rock"
+			solidModelName="nullSolid"
+			porosityModelName="rockPorosity"
+			permeabilityModelName="rockPerm"/>
+		<NullModel
+			name="nullSolid"/>
+		<PressurePorosity
+			name="rockPorosity"
+			defaultReferencePorosity="1.0"
+			referencePressure="0.0"
+			compressibility="1e-07"/>
+ 		<ConstantPermeability
+			name="rockPerm"
+			permeabilityComponents="{3.7e-12, 3.7e-12, 3.7e-12}"/>
+	</Constitutive>
+
+	<FieldSpecifications>
+		<FieldSpecification
+			name="matrixrockHeatCap"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/matrix"
+			fieldName="rockVolumetricHeatCapacity"
+			scale="2200"/>
+		<FieldSpecification
+			name="matrixrockThermalConductivity"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/matrix"
+			fieldName="rockThermalConductivity"
+			scale="181.44"/>
+		<FieldSpecification
+			name="matrixrockKineticRateFactor"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/matrix"
+			fieldName="rockKineticRateFactor"
+			scale="1.0"/>
+
+		<FieldSpecification
+			name="matrixInitialPressure"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/matrix"
+			fieldName="pressure"
+			scale="10000000.0"/>
+		<FieldSpecification
+			name="matrixInitialTemp"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/matrix"
+			fieldName="temperature"
+			scale="348.15"/>
+		<FieldSpecification
+			name="matrixInitComp_H2O"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/matrix"
+			fieldName="globalCompFraction"
+			component="0"
+			scale="0.1499999"/>
+		<FieldSpecification
+			name="matrixInitComp_Ions"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/matrix"
+			fieldName="globalCompFraction"
+			component="1"
+			scale="0.1499999"/>
+		<FieldSpecification
+			name="matrixInitComp_CaCO3"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/matrix"
+			fieldName="globalCompFraction"
+			component="2"
+			scale="0.7"/>
+
+		<FieldSpecification
+			name="sinkPressure"
+			objectPath="ElementRegions/matrix"
+			fieldName="pressure"
+			scale="7500000.0"
+			setNames="{ sink }"/>
+		<FieldSpecification
+			name="sinkTermTemp"
+			setNames="{ sink }"
+			objectPath="ElementRegions/matrix"
+			fieldName="temperature"
+			scale="348.15"/>
+		<FieldSpecification
+			name="sinkComp_H2O"
+			setNames="{ sink }"
+			objectPath="ElementRegions/matrix"
+			fieldName="globalCompFraction"
+			component="0"
+			scale="0.1499999"/>
+		<FieldSpecification
+			name="sinkComp_Ions"
+			setNames="{ sink }"
+			objectPath="ElementRegions/matrix"
+			fieldName="globalCompFraction"
+			component="1"
+			scale="0.1499999"/>
+		<FieldSpecification
+			name="sinkComp_CaCO3"
+			setNames="{ sink }"
+			objectPath="ElementRegions/matrix"
+			fieldName="globalCompFraction"
+			component="2"
+			scale="0.7"/>
+
+		<FieldSpecification
+			name="permx"
+			component="0"
+			initialCondition="1"
+			setNames="{all}"
+			objectPath="ElementRegions/matrix"
+			fieldName="rockPerm_permeability"
+			functionName="permxFunc"
+			scale="1e-15"/>
+		<FieldSpecification
+			name="permy"
+			component="1"
+			initialCondition="1"
+			setNames="{all}"
+			objectPath="ElementRegions/matrix"
+			fieldName="rockPerm_permeability"
+			functionName="permyFunc"
+			scale="1e-15"/>
+		<FieldSpecification
+			name="permz"
+			component="2"
+			initialCondition="1"
+			setNames="{all}"
+			objectPath="ElementRegions/matrix"
+			fieldName="rockPerm_permeability"
+			functionName="permzFunc"
+			scale="1e-15"/>
+
+		<SourceFlux
+			name="sourceTerm"
+			objectPath="ElementRegions/matrix"
+			component="0"
+			scale="-1.5"
+			setNames="{source}"/>
+	</FieldSpecifications>
+
+	<Functions>
+		<TableFunction
+			name="permxFunc"
+			inputVarNames="{elementCenter}"
+			coordinateFiles="{xlin.geos,ylin.geos,zlin.geos}"
+			voxelFile="permx.geos"
+			interpolation="nearest"/>
+		<TableFunction
+			name="permyFunc"
+			inputVarNames="{elementCenter}"
+			coordinateFiles="{xlin.geos,ylin.geos,zlin.geos}"
+			voxelFile="permy.geos"
+			interpolation="nearest"/>
+		<TableFunction
+			name="permzFunc"
+			inputVarNames="{elementCenter}"
+			coordinateFiles="{xlin.geos,ylin.geos,zlin.geos}"
+			voxelFile="permz.geos"
+			interpolation="nearest"/>
+	</Functions>
+
+	<Outputs>
+		<VTK
+			name="vtkOutput"/>
+	</Outputs>
+</Problem>

@@ -1,0 +1,304 @@
+<?xml version="1.0"?>
+<Problem>
+	<Solvers>
+		<ReactiveCompositionalMultiphaseOBL
+			name="compflow"
+			logLevel="1"
+			discretization="fluidTPFA"
+			targetRegions="{matrix, gap}"
+			enableEnergyBalance="0"
+			maxCompFractionChange="1"
+			numComponents="4"
+			numPhases="2"
+			transMultExp="3"
+			OBLOperatorsTableFile="benchmark_operators.txt">
+		<NonlinearSolverParameters
+			timeStepDecreaseFactor="0.5"
+			newtonTol="0.0001"
+			newtonMaxIter="25"/>
+		<LinearSolverParameters
+			directParallel="0"/>
+		</ReactiveCompositionalMultiphaseOBL>
+	</Solvers>
+
+	<Mesh>
+		<InternalMesh
+			name="mesh1"
+			elementTypes="{C3D8}"
+			xCoords="{0, 120, 480, 600}"
+			yCoords="{0, 10}"
+			zCoords="{0, 80, 160, 240}"
+			nx="{24, 72, 24}"
+			ny="{1}"
+			nz="{16, 16, 16}"
+			cellBlockNames="{matrix00, matrix01, matrix02, matrix10, gap11, matrix12, matrix20, matrix21, matrix22}"/>
+	</Mesh>
+
+	<Geometry>
+		<Box
+			name="source_gas"
+			xMin="{-0.01, -0.01, -0.01}"
+			xMax="{5.01, 10.01, 120.01}"/>
+		<Box
+			name="source_water"
+			xMin="{-0.01, -0.01, 119.99}"
+			xMax="{5.01, 10.01, 240.01}"/>
+		<Box
+			name="sink"
+			xMin="{594.99, -0.01, -0.01}"
+			xMax="{600.01, 10.01, 240.01}"/>
+	</Geometry>
+
+	<Events
+		maxTime="86400000.0">
+		<PeriodicEvent
+			name="outputs"
+			timeFrequency="1000000.0"
+			target="/Outputs/vtkOutput"/>
+		<PeriodicEvent
+			name="solver_1"
+			forceDt="1000.0"
+			endTime="10000.0"
+			target="/Solvers/compflow"/>
+		<PeriodicEvent
+			name="solver_2"
+			forceDt="10000.0"
+			beginTime="10000.0"
+			target="/Solvers/compflow"/>
+	</Events>
+
+	<NumericalMethods>
+		<FiniteVolume>
+			<TwoPointFluxApproximation name="fluidTPFA"/>
+		</FiniteVolume>
+	</NumericalMethods>
+
+	<ElementRegions>
+		<CellElementRegion
+			name="matrix"
+			cellBlocks="{matrix00, matrix01, matrix02, matrix10, matrix12, matrix20, matrix21, matrix22}"
+			materialList="{rock}"/>
+		<CellElementRegion
+			name="gap"
+			cellBlocks="{gap11}"
+			materialList="{rock}"/>
+	</ElementRegions>
+
+	<Constitutive>
+		<CompressibleSolidConstantPermeability
+			name="rock"
+			solidModelName="nullSolid"
+			porosityModelName="rockPorosity"
+			permeabilityModelName="rockPerm"/>
+		<NullModel
+			name="nullSolid"/>
+		<PressurePorosity
+			name="rockPorosity"
+			defaultReferencePorosity="1.0"
+			referencePressure="0.0"
+			compressibility="1e-07"/>
+ 		<ConstantPermeability
+			name="rockPerm"
+			permeabilityComponents="{3.7e-12, 3.7e-12, 3.7e-12}"/>
+	</Constitutive>
+
+	<FieldSpecifications>
+		<FieldSpecification
+			name="matrixrockHeatCap"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/matrix"
+			fieldName="rockVolumetricHeatCapacity"
+			scale="2200"/>
+		<FieldSpecification
+			name="matrixrockThermalConductivity"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/matrix"
+			fieldName="rockThermalConductivity"
+			scale="181.44"/>
+		<FieldSpecification
+			name="matrixrockKineticRateFactor"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/matrix"
+			fieldName="rockKineticRateFactor"
+			scale="1.0"/>
+
+		<FieldSpecification
+			name="gaprockHeatCap"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/gap"
+			fieldName="rockVolumetricHeatCapacity"
+			scale="2200"/>
+		<FieldSpecification
+			name="gaprockThermalConductivity"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/gap"
+			fieldName="rockThermalConductivity"
+			scale="181.44"/>
+		<FieldSpecification
+			name="gaprockKineticRateFactor"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/gap"
+			fieldName="rockKineticRateFactor"
+			scale="1.0"/>
+
+		<FieldSpecification
+			name="matrixInitialPressure"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/matrix"
+			fieldName="pressure"
+			scale="10000000.0"/>
+		<FieldSpecification
+			name="matrixInitialTemp"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/matrix"
+			fieldName="temperature"
+			scale="348.15"/>
+		<FieldSpecification
+			name="matrixInitComp_CO2"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/matrix"
+			fieldName="globalCompFraction"
+			component="0"
+			scale="1e-10"/>
+		<FieldSpecification
+			name="matrixInitComp_Ions"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/matrix"
+			fieldName="globalCompFraction"
+			component="1"
+			scale="0.1499999"/>
+		<FieldSpecification
+			name="matrixInitComp_H2O"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/matrix"
+			fieldName="globalCompFraction"
+			component="2"
+			scale="0.1499999"/>
+		<FieldSpecification
+			name="matrixInitComp_CaCO3"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/matrix"
+			fieldName="globalCompFraction"
+			component="3"
+			scale="0.7"/>
+
+		<FieldSpecification
+			name="gapInitialPressure"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/gap"
+			fieldName="pressure"
+			scale="10000000.0"/>
+		<FieldSpecification
+			name="gapInitialTemp"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/gap"
+			fieldName="temperature"
+			scale="348.15"/>
+		<FieldSpecification
+			name="gapInitComp_CO2"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/gap"
+			fieldName="globalCompFraction"
+			component="0"
+			scale="1e-10"/>
+		<FieldSpecification
+			name="gapInitComp_Ions"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/gap"
+			fieldName="globalCompFraction"
+			component="1"
+			scale="0.399999"/>
+		<FieldSpecification
+			name="gapInitComp_H2O"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/gap"
+			fieldName="globalCompFraction"
+			component="2"
+			scale="0.399999"/>
+		<FieldSpecification
+			name="gapInitComp_CaCO3"
+			initialCondition="1"
+			setNames="{ all }"
+			objectPath="ElementRegions/gap"
+			fieldName="globalCompFraction"
+			component="3"
+			scale="0.2"/>
+
+		<FieldSpecification
+			name="sinkPressure"
+			objectPath="ElementRegions/matrix"
+			fieldName="pressure"
+			scale="9500000.0"
+			setNames="{ sink }"/>
+		<FieldSpecification
+			name="sinkTermTemp"
+			setNames="{ sink }"
+			objectPath="ElementRegions/matrix"
+			fieldName="temperature"
+			scale="348.15"/>
+		<FieldSpecification
+			name="sinkComp_CO2"
+			setNames="{ sink }"
+			objectPath="ElementRegions/matrix"
+			fieldName="globalCompFraction"
+			component="0"
+			scale="1e-10"/>
+		<FieldSpecification
+			name="sinkComp_Ions"
+			setNames="{ sink }"
+			objectPath="ElementRegions/matrix"
+			fieldName="globalCompFraction"
+			component="1"
+			scale="0.1499999"/>
+		<FieldSpecification
+			name="sinkComp_H2O"
+			setNames="{ sink }"
+			objectPath="ElementRegions/matrix"
+			fieldName="globalCompFraction"
+			component="2"
+			scale="0.1499999"/>
+		<FieldSpecification
+			name="sinkComp_CaCO3"
+			setNames="{ sink }"
+			objectPath="ElementRegions/matrix"
+			fieldName="globalCompFraction"
+			component="3"
+			scale="0.7"/>
+
+
+		<SourceFlux
+			name="sourceGas"
+			objectPath="ElementRegions/matrix"
+			component="0"
+			scale="-0.026298736819073108"
+			setNames="{source_gas}"/>
+		<SourceFlux
+			name="sourceWater"
+			objectPath="ElementRegions/matrix"
+			component="2"
+			scale="-0.1284580918321207"
+			setNames="{source_water}"/>
+	</FieldSpecifications>
+
+	<Outputs>
+		<VTK
+			name="vtkOutput"/>
+	</Outputs>
+</Problem>
